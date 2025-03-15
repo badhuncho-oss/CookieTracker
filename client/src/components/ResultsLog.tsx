@@ -14,23 +14,23 @@ export default function ResultsLog() {
   const [viewType, setViewType] = useState(VIEW_TYPES.RESULTS);
   
   const getBackgroundColor = (result: string) => {
-    if (result === 'player') return 'bg-[#1a5d8f]';
-    if (result === 'banker') return 'bg-[#a02c2c]';
-    if (result === 'tie') return 'bg-[#2a7d2a]';
+    if (result === 'player') return 'bg-blue-700';
+    if (result === 'banker') return 'bg-red-700';
+    if (result === 'tie') return 'bg-green-700';
     return 'bg-gray-500';
   };
   
   const getBorderColor = (result: string) => {
-    if (result === 'player') return 'border-[#1a5d8f]';
-    if (result === 'banker') return 'border-[#a02c2c]';
-    if (result === 'tie') return 'border-[#2a7d2a]';
+    if (result === 'player') return 'border-blue-700';
+    if (result === 'banker') return 'border-red-700';
+    if (result === 'tie') return 'border-green-700';
     return 'border-gray-500';
   };
   
   const getTextColor = (result: string) => {
-    if (result === 'player') return 'text-[#1a5d8f]';
-    if (result === 'banker') return 'text-[#a02c2c]';
-    if (result === 'tie') return 'text-[#2a7d2a]';
+    if (result === 'player') return 'text-blue-500';
+    if (result === 'banker') return 'text-red-500';
+    if (result === 'tie') return 'text-green-500';
     return 'text-gray-500';
   };
   
@@ -294,7 +294,7 @@ export default function ResultsLog() {
   // Tab button for view selection
   const TabButton = ({ type, label }: { type: string; label: string }) => (
     <button
-      className={`px-3 py-1 text-sm font-medium ${viewType === type ? 'bg-gray-700 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
+      className={`px-2 py-1 text-xs font-medium ${viewType === type ? 'bg-gray-700 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
       onClick={() => setViewType(type)}
     >
       {label}
@@ -302,33 +302,36 @@ export default function ResultsLog() {
   );
   
   return (
-    <div className="border-t border-gray-700 pt-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-medium">Game Road Map</h3>
-        <div className="flex space-x-1">
+    <div className="mb-3 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+        <h3 className="font-bold text-lg">Game Road Map</h3>
+      </div>
+      
+      <div className="p-2">
+        <div className="flex space-x-1 justify-center mb-2 bg-gray-800 p-1 rounded-md">
           <TabButton type={VIEW_TYPES.RESULTS} label="Results" />
           <TabButton type={VIEW_TYPES.BIG_ROAD} label="Big Road" />
           <TabButton type={VIEW_TYPES.BIG_EYE_ROAD} label="Big Eye" />
-          <TabButton type={VIEW_TYPES.SMALL_ROAD} label="Small Road" />
+          <TabButton type={VIEW_TYPES.SMALL_ROAD} label="Small" />
         </div>
-      </div>
-      
-      <div className="bg-gray-900 p-2 rounded min-h-[100px]">
-        {renderSelectedView()}
-      </div>
-      
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-        <div className={`border-t-2 ${getBorderColor('player')} pt-1`}>
-          <span className={`${getTextColor('player')} font-bold uppercase`}>Player</span> 
-          <span className="text-gray-400 ml-1">左</span>
+        
+        <div className="bg-gray-800 p-1 rounded-md min-h-[100px] overflow-auto max-h-[300px]">
+          {renderSelectedView()}
         </div>
-        <div className={`border-t-2 ${getBorderColor('tie')} pt-1`}>
-          <span className={`${getTextColor('tie')} font-bold uppercase`}>Tie</span>
-          <span className="text-gray-400 ml-1">和</span>
-        </div>
-        <div className={`border-t-2 ${getBorderColor('banker')} pt-1`}>
-          <span className={`${getTextColor('banker')} font-bold uppercase`}>Banker</span>
-          <span className="text-gray-400 ml-1">庄</span>
+        
+        <div className="mt-2 grid grid-cols-3 gap-1 text-center text-[10px]">
+          <div className={`border-t ${getBorderColor('player')} pt-0.5`}>
+            <span className={`${getTextColor('player')} font-bold uppercase`}>P</span> 
+            <span className="text-gray-400 ml-1">左</span>
+          </div>
+          <div className={`border-t ${getBorderColor('tie')} pt-0.5`}>
+            <span className={`${getTextColor('tie')} font-bold uppercase`}>T</span>
+            <span className="text-gray-400 ml-1">和</span>
+          </div>
+          <div className={`border-t ${getBorderColor('banker')} pt-0.5`}>
+            <span className={`${getTextColor('banker')} font-bold uppercase`}>B</span>
+            <span className="text-gray-400 ml-1">庄</span>
+          </div>
         </div>
       </div>
     </div>
