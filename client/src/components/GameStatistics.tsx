@@ -31,7 +31,6 @@ export default function GameStatistics() {
     let currentCount = 1;
     let longestType = currentType;
     let longestCount = 1;
-    let currentStreak = { type: currentType, count: 1 };
     
     // Go through results backwards to find current streak
     for (let i = gameResults.length - 2; i >= 0; i--) {
@@ -84,122 +83,128 @@ export default function GameStatistics() {
   };
   
   return (
-    <div className="mb-6">
-      {/* Game controls */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="flex flex-col">
-          <div className="flex justify-between mb-2">
-            <label className="text-gray-300">Number of Cards:</label>
-            <div className="flex">
-              <button 
-                className="bg-gray-700 px-2 hover:bg-gray-600"
-                onClick={decrementCardCount}
-              >
-                ↓
-              </button>
-              <span className="bg-white text-black px-3 py-1 font-medium">{cardCount}</span>
-              <button 
-                className="bg-gray-700 px-2 hover:bg-gray-600"
-                onClick={incrementCardCount}
-              >
-                ↑
-              </button>
-            </div>
-          </div>
-          <div className="flex justify-between">
-            <label className="text-gray-300">Play Number:</label>
-            <span className="font-medium">{playNumber}</span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
+    <div className="mb-3 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+        <h3 className="font-bold text-lg">Game Control & Stats</h3>
+        <div className="flex items-center space-x-2">
           <button 
-            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 uppercase font-medium tracking-wide border border-gray-700 text-sm"
-            onClick={resetGame}
+            className="text-xs px-2 py-0.5 bg-gray-700 hover:bg-gray-600 rounded"
+            onClick={() => setShowStatsDetails(!showStatsDetails)}
           >
-            Reset Game
-          </button>
-          <button 
-            className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 font-medium border border-gray-700 text-sm"
-            onClick={() => setAiMode(aiMode === 'standard' ? 'advanced' : 'standard')}
-          >
-            Switch to {aiMode === 'standard' ? 'Neural AI' : 'Standard AI'}
+            {showStatsDetails ? 'Hide' : 'Details'}
           </button>
         </div>
       </div>
       
-      {/* Current statistics */}
-      <div className="border-t border-gray-700 pt-4 mb-2">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-medium">Statistics</h3>
-          <button 
-            className="text-sm text-gray-400 hover:text-white"
-            onClick={() => setShowStatsDetails(!showStatsDetails)}
-          >
-            {showStatsDetails ? 'Hide Details' : 'Show Details'}
-          </button>
+      <div className="p-3">
+        {/* Game controls - Compact grid layout */}
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="bg-gray-800 p-2 rounded-md border border-gray-700">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-gray-400">Cards in Shoe:</span>
+              <div className="flex">
+                <button 
+                  className="bg-gray-700 px-1.5 text-xs hover:bg-gray-600 rounded-l"
+                  onClick={decrementCardCount}
+                >
+                  -
+                </button>
+                <span className="bg-gray-600 text-white px-2 text-xs font-medium flex items-center">{cardCount}</span>
+                <button 
+                  className="bg-gray-700 px-1.5 text-xs hover:bg-gray-600 rounded-r"
+                  onClick={incrementCardCount}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-gray-400">Play Number:</span>
+              <span className="font-medium text-xs">{playNumber}</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-1">
+            <button 
+              className="bg-yellow-900 hover:bg-yellow-800 px-1 py-1 uppercase text-yellow-100 font-medium tracking-wide text-xs rounded"
+              onClick={resetGame}
+            >
+              Reset Game
+            </button>
+            <button 
+              className="bg-blue-900 hover:bg-blue-800 px-1 py-1 text-blue-100 font-medium text-xs rounded"
+              onClick={() => setAiMode(aiMode === 'standard' ? 'advanced' : 'standard')}
+            >
+              {aiMode === 'standard' ? 'Enable Neural AI' : 'Standard AI Mode'}
+            </button>
+          </div>
         </div>
         
-        {/* Basic stats */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-gray-800 p-2 rounded text-center">
-            <div className="text-sm text-blue-400">Player</div>
-            <div className="text-lg font-bold">{statistics.playerWins}</div>
+        {/* Basic statistics - Compact with icons */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          <div className="bg-blue-900 bg-opacity-30 border border-blue-900 p-1.5 rounded text-center">
+            <div className="text-xs text-blue-400 font-medium">Player</div>
+            <div className="text-base font-bold">{statistics.playerWins}</div>
             <div className="text-xs text-gray-400">{getPercentage(statistics.playerWins)}%</div>
           </div>
-          <div className="bg-gray-800 p-2 rounded text-center">
-            <div className="text-sm text-green-400">Tie</div>
-            <div className="text-lg font-bold">{statistics.tieWins}</div>
+          <div className="bg-green-900 bg-opacity-30 border border-green-900 p-1.5 rounded text-center">
+            <div className="text-xs text-green-400 font-medium">Tie</div>
+            <div className="text-base font-bold">{statistics.tieWins}</div>
             <div className="text-xs text-gray-400">{getPercentage(statistics.tieWins)}%</div>
           </div>
-          <div className="bg-gray-800 p-2 rounded text-center">
-            <div className="text-sm text-red-400">Banker</div>
-            <div className="text-lg font-bold">{statistics.bankerWins}</div>
+          <div className="bg-red-900 bg-opacity-30 border border-red-900 p-1.5 rounded text-center">
+            <div className="text-xs text-red-400 font-medium">Banker</div>
+            <div className="text-base font-bold">{statistics.bankerWins}</div>
             <div className="text-xs text-gray-400">{getPercentage(statistics.bankerWins)}%</div>
+          </div>
+        </div>
+        
+        {/* Streak information - Always show compactly */}
+        <div className="flex space-x-2 text-xs">
+          <div className="flex-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
+            <span className="text-gray-400">Current:</span>
+            {streaks.current.type ? (
+              <span className="ml-1">
+                <span className={`font-bold ${getStreakColor(streaks.current.type)}`}>
+                  {getStreakLabel(streaks.current.type)}
+                </span>
+                <span className="ml-1">× {streaks.current.count}</span>
+              </span>
+            ) : (
+              <span className="ml-1">None</span>
+            )}
+          </div>
+          <div className="flex-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
+            <span className="text-gray-400">Longest:</span>
+            {streaks.longest.type ? (
+              <span className="ml-1">
+                <span className={`font-bold ${getStreakColor(streaks.longest.type)}`}>
+                  {getStreakLabel(streaks.longest.type)}
+                </span>
+                <span className="ml-1">× {streaks.longest.count}</span>
+              </span>
+            ) : (
+              <span className="ml-1">None</span>
+            )}
           </div>
         </div>
         
         {/* Detailed stats */}
         {showStatsDetails && (
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="bg-gray-800 p-3 rounded">
-              <h4 className="text-gray-300 mb-1">Current Streak</h4>
-              {streaks.current.type ? (
-                <div className="flex items-center">
-                  <span className={`font-bold text-lg ${getStreakColor(streaks.current.type)}`}>
-                    {getStreakLabel(streaks.current.type)}
-                  </span>
-                  <span className="ml-2">× {streaks.current.count}</span>
-                </div>
-              ) : (
-                <span>No streak</span>
-              )}
-            </div>
-            <div className="bg-gray-800 p-3 rounded">
-              <h4 className="text-gray-300 mb-1">Longest Streak</h4>
-              {streaks.longest.type ? (
-                <div className="flex items-center">
-                  <span className={`font-bold text-lg ${getStreakColor(streaks.longest.type)}`}>
-                    {getStreakLabel(streaks.longest.type)}
-                  </span>
-                  <span className="ml-2">× {streaks.longest.count}</span>
-                </div>
-              ) : (
-                <span>No streak</span>
-              )}
-            </div>
-            <div className="bg-gray-800 p-3 rounded">
-              <h4 className="text-gray-300 mb-1">Player/Banker Ratio</h4>
-              <div>
+          <div className="grid grid-cols-2 gap-2 text-xs mt-2 pt-2 border-t border-gray-700">
+            <div className="bg-gray-800 p-2 rounded">
+              <h4 className="text-gray-400">P/B Ratio</h4>
+              <div className="font-medium">
                 {statistics.playerWins} : {statistics.bankerWins}
                 {statistics.playerWins > 0 && statistics.bankerWins > 0 && (
-                  <span className="text-xs text-gray-400 ml-2">
+                  <span className="text-gray-400 ml-1">
                     ({(statistics.playerWins / statistics.bankerWins).toFixed(2)})
                   </span>
                 )}
               </div>
             </div>
-            <div className="bg-gray-800 p-3 rounded">
-              <h4 className="text-gray-300 mb-1">Total Hands</h4>
+            <div className="bg-gray-800 p-2 rounded">
+              <h4 className="text-gray-400">Total Hands</h4>
               <div className="font-medium">{statistics.totalPlays}</div>
             </div>
           </div>
