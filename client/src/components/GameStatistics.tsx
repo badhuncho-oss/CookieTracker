@@ -129,19 +129,19 @@ export default function GameStatistics() {
           </div>
         </div>
         
-        {/* Win statistics boxes */}
+        {/* Win statistics boxes - more square-shaped */}
         <div className="grid grid-cols-3 gap-1 mb-1">
-          <div className="bg-blue-900 bg-opacity-30 border border-blue-900 p-0.5 rounded text-center">
+          <div className="aspect-square bg-blue-900 bg-opacity-30 border border-blue-900 p-0.5 rounded text-center flex flex-col justify-center">
             <div className="text-[9px] text-blue-400 font-medium">P</div>
             <div className="text-sm font-bold">{statistics.playerWins}</div>
             <div className="text-[8px] text-gray-400">{getPercentage(statistics.playerWins)}%</div>
           </div>
-          <div className="bg-green-900 bg-opacity-30 border border-green-900 p-0.5 rounded text-center">
+          <div className="aspect-square bg-green-900 bg-opacity-30 border border-green-900 p-0.5 rounded text-center flex flex-col justify-center">
             <div className="text-[9px] text-green-400 font-medium">T</div>
             <div className="text-sm font-bold">{statistics.tieWins}</div>
             <div className="text-[8px] text-gray-400">{getPercentage(statistics.tieWins)}%</div>
           </div>
-          <div className="bg-red-900 bg-opacity-30 border border-red-900 p-0.5 rounded text-center">
+          <div className="aspect-square bg-red-900 bg-opacity-30 border border-red-900 p-0.5 rounded text-center flex flex-col justify-center">
             <div className="text-[9px] text-red-400 font-medium">B</div>
             <div className="text-sm font-bold">{statistics.bankerWins}</div>
             <div className="text-[8px] text-gray-400">{getPercentage(statistics.bankerWins)}%</div>

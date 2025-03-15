@@ -254,7 +254,7 @@ export default function ResultsLog() {
     );
   };
   
-  // Simple sequential display of results
+  // Simple sequential display of results with square-shaped indicators
   const renderResults = () => {
     return (
       <div className="bg-gray-900 p-3 rounded">
@@ -265,7 +265,7 @@ export default function ResultsLog() {
             {gameResults.map((result, index) => (
               <span 
                 key={index}
-                className={`inline-block py-1 px-2 rounded-sm text-sm ${getBackgroundColor(result)} font-bold`}
+                className={`inline-block aspect-square w-8 flex items-center justify-center rounded-sm text-sm ${getBackgroundColor(result)} font-bold`}
               >
                 {getLabel(result)}
               </span>
@@ -291,10 +291,10 @@ export default function ResultsLog() {
     }
   };
   
-  // Tab button for view selection
+  // Tab button for view selection (more square-shaped)
   const TabButton = ({ type, label }: { type: string; label: string }) => (
     <button
-      className={`px-2 py-1 text-xs font-medium ${viewType === type ? 'bg-gray-700 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
+      className={`w-14 h-10 text-xs font-medium flex items-center justify-center ${viewType === type ? 'bg-gray-700 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
       onClick={() => setViewType(type)}
     >
       {label}

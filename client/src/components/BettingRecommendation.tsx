@@ -41,31 +41,31 @@ export default function BettingRecommendation() {
       </div>
       
       <div className="p-1">
-        {/* Primary recommendation */}
+        {/* Primary recommendation - more square-shaped */}
         <div className="mb-1">
-          <div className={`${getBgColor(recommendation.type)} bg-opacity-20 border ${recommendation.type === 'player' ? 'border-blue-800' : recommendation.type === 'banker' ? 'border-red-800' : 'border-green-800'} rounded p-1 flex items-center justify-between`}>
-            <div>
+          <div className={`h-16 ${getBgColor(recommendation.type)} bg-opacity-20 border ${recommendation.type === 'player' ? 'border-blue-800' : recommendation.type === 'banker' ? 'border-red-800' : 'border-green-800'} rounded p-1 grid grid-cols-2 text-center`}>
+            <div className="flex flex-col justify-center items-center">
               <div className="text-[10px] text-gray-400">{recommendation.units}u</div>
               <div className={`text-lg font-bold ${getTextColor(recommendation.type)}`}>
                 {recommendation.text}
               </div>
             </div>
-            <div className="text-right">
+            <div className="flex flex-col justify-center items-center border-l border-gray-700">
               <div className="text-[10px] text-gray-400">信心</div>
               <div className="text-base font-bold">{recommendation.confidence}%</div>
             </div>
           </div>
           
-          {/* Secondary recommendation (if available) */}
+          {/* Secondary recommendation (if available) - more square-shaped */}
           {secondaryRecommendation && (
-            <div className={`${getBgColor(secondaryRecommendation.type)} bg-opacity-10 border ${secondaryRecommendation.type === 'player' ? 'border-blue-800' : secondaryRecommendation.type === 'banker' ? 'border-red-800' : 'border-green-800'} border-opacity-50 rounded p-1 flex items-center justify-between mt-1`}>
-              <div>
+            <div className={`h-12 ${getBgColor(secondaryRecommendation.type)} bg-opacity-10 border ${secondaryRecommendation.type === 'player' ? 'border-blue-800' : secondaryRecommendation.type === 'banker' ? 'border-red-800' : 'border-green-800'} border-opacity-50 rounded p-1 grid grid-cols-2 text-center mt-1`}>
+              <div className="flex flex-col justify-center items-center">
                 <div className="text-[10px] text-gray-400">{secondaryRecommendation.units}u</div>
                 <div className={`text-sm font-medium ${getTextColor(secondaryRecommendation.type)}`}>
                   {secondaryRecommendation.text}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="flex flex-col justify-center items-center border-l border-gray-700">
                 <div className="text-[10px] text-gray-400">信心</div>
                 <div className="text-sm font-medium">{secondaryRecommendation.confidence}%</div>
               </div>
@@ -73,17 +73,17 @@ export default function BettingRecommendation() {
           )}
         </div>
         
-        {/* Win/Loss Statistics - Ultra Compact Version */}
+        {/* Win/Loss Statistics - Square Version */}
         <div className="grid grid-cols-3 gap-1 text-center">
-          <div className="bg-gray-800 rounded p-0.5">
+          <div className="aspect-square bg-gray-800 rounded p-0.5 flex flex-col items-center justify-center">
             <div className="text-[9px] text-gray-400">Win Rate</div>
             <div className="text-xs font-bold">{getWinPercentage()}%</div>
           </div>
-          <div className="bg-gray-800 rounded p-0.5">
+          <div className="aspect-square bg-gray-800 rounded p-0.5 flex flex-col items-center justify-center">
             <div className="text-[9px] text-gray-400">Wins</div>
             <div className="text-xs font-bold text-green-500">{winStreak}</div>
           </div>
-          <div className="bg-gray-800 rounded p-0.5">
+          <div className="aspect-square bg-gray-800 rounded p-0.5 flex flex-col items-center justify-center">
             <div className="text-[9px] text-gray-400">Losses</div>
             <div className="text-xs font-bold text-red-500">{lossStreak}</div>
           </div>

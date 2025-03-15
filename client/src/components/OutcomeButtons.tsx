@@ -66,26 +66,26 @@ export default function OutcomeButtons() {
       <div className="p-1">
         <div className="grid grid-cols-3 gap-1 mb-1">
           <button 
-            className={`bg-[#1a5d8f] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('player')}`}
+            className={`aspect-square bg-[#1a5d8f] hover:bg-opacity-90 flex flex-col items-center justify-center text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('player')}`}
             onClick={() => handleOutcomeClick('player')}
           >
-            Player
+            <span>P</span>
             <div className="text-[9px] font-normal opacity-75">左</div>
             {getMatchIndicator('player')}
           </button>
           <button 
-            className={`bg-[#2a7d2a] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('tie')}`}
+            className={`aspect-square bg-[#2a7d2a] hover:bg-opacity-90 flex flex-col items-center justify-center text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('tie')}`}
             onClick={() => handleOutcomeClick('tie')}
           >
-            Tie
+            <span>T</span>
             <div className="text-[9px] font-normal opacity-75">和</div>
             {getMatchIndicator('tie')}
           </button>
           <button 
-            className={`bg-[#a02c2c] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('banker')}`}
+            className={`aspect-square bg-[#a02c2c] hover:bg-opacity-90 flex flex-col items-center justify-center text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('banker')}`}
             onClick={() => handleOutcomeClick('banker')}
           >
-            Banker
+            <span>B</span>
             <div className="text-[9px] font-normal opacity-75">庄</div>
             {getMatchIndicator('banker')}
           </button>
