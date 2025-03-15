@@ -9,6 +9,13 @@ interface BetRecommendation {
   confidence: number;
 }
 
+interface BettingHistory {
+  play: number;
+  bet: string;
+  result: 'win' | 'loss';
+  chipChange: string;
+}
+
 interface BaccaratContextType {
   cardCount: number;
   playNumber: number;
@@ -24,6 +31,11 @@ interface BaccaratContextType {
     tieWins: number;
     totalPlays: number;
   };
+  bettingMode: 'standard' | 'method345' | 'method321';
+  setBettingMode: (mode: 'standard' | 'method345' | 'method321') => void;
+  isHighBetsMode: boolean;
+  setHighBetsMode: (enabled: boolean) => void;
+  bettingHistory: BettingHistory[];
   setCurrentCards: (cards: string) => void;
   incrementCardCount: () => void;
   decrementCardCount: () => void;
@@ -44,6 +56,11 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
   const [winStreak, setWinStreak] = useState<number>(0);
   const [lossStreak, setLossStreak] = useState<number>(0);
   const [aiMode, setAiMode] = useState<'standard' | 'advanced'>('advanced');
+  
+  // Betting system state
+  const [bettingMode, setBettingMode] = useState<'standard' | 'method345' | 'method321'>('standard');
+  const [isHighBetsMode, setHighBetsMode] = useState<boolean>(false);
+  const [bettingHistory, setBettingHistory] = useState<BettingHistory[]>([]);
   
   // Statistics
   const [statistics, setStatistics] = useState({
@@ -280,6 +297,77 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
     apiRequest('POST', '/api/reset-game', {});
   };
   
+  // Update betting history when a result is recorded
+  const updateBettingHistory = (outcome: string, didWin: boolean) => {
+    // Skip if there's no recommendation
+    if (recommendation.type === '') return;
+    
+    // Create history entry
+    const betText = recommendation.text;
+    const chipChange = didWin ? `+${recommendation.units}` : `-${recommendation.units}`;
+    
+    const historyEntry: BettingHistory = {
+      play: playNumber + 1,
+      bet: betText,
+      result: didWin ? 'win' : 'loss',
+      chipChange
+    };
+    
+    // Add to history
+    setBettingHistory(prev => [historyEntry, ...prev].slice(0, 15));  // Keep most recent 15 entries
+  };
+  
+  // Calculate units based on betting mode
+  const calculateUnits = (type: string, confidence: number): number => {
+    // Base calculation on standard mode
+    let units = 1;
+    if (confidence > 85) units = 3;
+    if (confidence > 95) units = 5;
+    
+    // Method 3-4-5: Increases for wins, decreases for losses
+    if (bettingMode === 'method345') {
+      if (winStreak > 0) {
+        units = Math.min(5, winStreak + 2);  // Start at 3, max at 5
+      } else if (lossStreak > 0) {
+        units = Math.max(1, 3 - lossStreak);  // Start at 3, min at 1
+      } else {
+        units = 3; // Default start
+      }
+    }
+    
+    // Method 3-2-1: Decreases for wins, increases for losses
+    else if (bettingMode === 'method321') {
+      if (winStreak > 0) {
+        units = Math.max(1, 3 - winStreak);  // Start at 3, min at 1
+      } else if (lossStreak > 0) {
+        units = Math.min(5, lossStreak + 2);  // Start at 3, max at 5
+      } else {
+        units = 3; // Default start
+      }
+    }
+    
+    // High Bets Mode: Allow up to 9 units for high confidence
+    if (isHighBetsMode && confidence > 90) {
+      if (confidence > 98) return 9;
+      if (confidence > 95) return 7;
+    }
+    
+    return units;
+  };
+  
+  // Override the recordOutcome to also update betting history
+  const recordOutcomeWithHistory = (outcome: 'player' | 'banker' | 'tie') => {
+    const didWin = 
+      outcome === recommendation.type || 
+      (outcome === 'tie' && secondaryRecommendation?.type === 'tie');
+    
+    // Update betting history
+    updateBettingHistory(outcome, didWin);
+    
+    // Call original recordOutcome
+    recordOutcome(outcome);
+  };
+
   return (
     <BaccaratContext.Provider value={{
       cardCount,
@@ -291,10 +379,15 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
       winStreak,
       lossStreak,
       statistics,
+      bettingMode,
+      setBettingMode,
+      isHighBetsMode,
+      setHighBetsMode,
+      bettingHistory,
       setCurrentCards,
       incrementCardCount,
       decrementCardCount,
-      recordOutcome,
+      recordOutcome: recordOutcomeWithHistory,
       resetGame,
       aiMode,
       setAiMode,
