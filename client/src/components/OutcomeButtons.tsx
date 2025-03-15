@@ -50,74 +50,63 @@ export default function OutcomeButtons() {
   };
   
   return (
-    <div className="mb-8 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
-        <h3 className="font-bold text-lg">Record Outcome</h3>
-        <div className="text-sm text-gray-400">
-          Select the winning hand
-        </div>
+    <div className="mb-1 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-2 py-1 flex justify-between items-center border-b border-gray-700">
+        <h3 className="font-bold text-sm">Record Outcome</h3>
+        {selectedOutcome && (
+          <span className={`text-xs font-bold ${
+            selectedOutcome === 'player' ? 'text-blue-400' : 
+            selectedOutcome === 'banker' ? 'text-red-400' : 'text-green-400'
+          }`}>
+            Selected: {selectedOutcome.toUpperCase()}
+          </span>
+        )}
       </div>
       
-      <div className="p-4">
-        <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="p-1">
+        <div className="grid grid-cols-3 gap-1 mb-1">
           <button 
-            className={`bg-[#1a5d8f] hover:bg-opacity-90 py-6 text-white font-bold text-xl uppercase rounded-md relative transition-all ${getBorderStyle('player')}`}
+            className={`bg-[#1a5d8f] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('player')}`}
             onClick={() => handleOutcomeClick('player')}
           >
             Player
-            <div className="text-xs font-normal mt-1 opacity-75">左</div>
+            <div className="text-[9px] font-normal opacity-75">左</div>
             {getMatchIndicator('player')}
           </button>
           <button 
-            className={`bg-[#2a7d2a] hover:bg-opacity-90 py-6 text-white font-bold text-xl uppercase rounded-md relative transition-all ${getBorderStyle('tie')}`}
+            className={`bg-[#2a7d2a] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('tie')}`}
             onClick={() => handleOutcomeClick('tie')}
           >
             Tie
-            <div className="text-xs font-normal mt-1 opacity-75">和</div>
+            <div className="text-[9px] font-normal opacity-75">和</div>
             {getMatchIndicator('tie')}
           </button>
           <button 
-            className={`bg-[#a02c2c] hover:bg-opacity-90 py-6 text-white font-bold text-xl uppercase rounded-md relative transition-all ${getBorderStyle('banker')}`}
+            className={`bg-[#a02c2c] hover:bg-opacity-90 py-2 text-white font-bold text-xs uppercase rounded relative transition-all ${getBorderStyle('banker')}`}
             onClick={() => handleOutcomeClick('banker')}
           >
             Banker
-            <div className="text-xs font-normal mt-1 opacity-75">庄</div>
+            <div className="text-[9px] font-normal opacity-75">庄</div>
             {getMatchIndicator('banker')}
           </button>
         </div>
         
         {selectedOutcome && (
-          <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-700">
-            <div className="flex items-center">
-              <span className="text-gray-400 mr-2">Selected outcome:</span>
-              <span className={`font-bold ${
-                selectedOutcome === 'player' ? 'text-blue-400' : 
-                selectedOutcome === 'banker' ? 'text-red-400' : 'text-green-400'
-              }`}>
-                {selectedOutcome.toUpperCase()}
-              </span>
-            </div>
-            <div className="flex space-x-2">
-              <button 
-                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm"
-                onClick={() => setSelectedOutcome(null)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="px-4 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded text-sm font-medium"
-                onClick={confirmOutcome}
-              >
-                Confirm
-              </button>
-            </div>
+          <div className="flex justify-end items-center gap-1 mt-1">
+            <button 
+              className="px-2 py-0.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs"
+              onClick={() => setSelectedOutcome(null)}
+            >
+              ✕
+            </button>
+            <button 
+              className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white rounded text-xs font-medium"
+              onClick={confirmOutcome}
+            >
+              Confirm
+            </button>
           </div>
         )}
-        
-        <div className="bg-blue-900/20 mt-4 p-3 rounded-md border border-blue-900/40 text-sm text-blue-300">
-          <p>Select the winning outcome to record it and update predictions and statistics. 
-          The green indicator shows which selection matches the primary recommendation.</p>
-        </div>
       </div>
     </div>
   );

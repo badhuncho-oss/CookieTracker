@@ -15,35 +15,34 @@ export default function Home() {
 
   return (
     <div className="bg-black text-white font-roboto min-h-screen">
-      <div className="max-w-3xl mx-auto px-1 py-1">
-        <div className="flex items-center justify-between mb-1">
-          <AppTitle 
-            onHelpClick={() => setShowHelpGuide(true)} 
-            onBettingSystemClick={() => setShowBettingSystem(true)}
-          />
-        </div>
+      <div className="max-w-5xl mx-auto px-1 py-1">
+        <Header />
+        <AppTitle 
+          onHelpClick={() => setShowHelpGuide(true)} 
+          onBettingSystemClick={() => setShowBettingSystem(true)}
+        />
         
-        {/* Three column layout for maximum compactness */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {/* Three column ultra-compact layout */}
+        <div className="grid grid-cols-3 gap-1">
           {/* Left column */}
-          <div className="md:col-span-1">
+          <div className="col-span-1">
             <CardInput />
             <OutcomeButtons />
           </div>
           
           {/* Middle column */}
-          <div className="md:col-span-1">
+          <div className="col-span-1">
             <BettingRecommendation />
             <GameStatistics />
           </div>
           
           {/* Right column */}
-          <div className="md:col-span-1">
+          <div className="col-span-1">
             <ResultsLog />
           </div>
         </div>
         
-        <div className="mt-2 text-center text-xs text-gray-500">
+        <div className="mt-1 text-center text-[9px] text-gray-500">
           <Footer />
         </div>
       </div>

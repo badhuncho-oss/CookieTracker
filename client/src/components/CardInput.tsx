@@ -23,23 +23,26 @@ export default function CardInput() {
   };
   
   return (
-    <div className="mb-3 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
-        <h3 className="font-bold text-lg">Card Input</h3>
-        <div className="flex space-x-3 text-sm">
+    <div className="mb-1 bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-2 py-1 flex justify-between items-center border-b border-gray-700">
+        <div className="flex items-center">
+          <h3 className="font-bold text-sm">Card Input</h3>
+          <span className="ml-2 text-yellow-500 text-xs">{cardValues && `(${cardValues.length}) ${cardValues}`}</span>
+        </div>
+        <div className="flex space-x-2 text-xs">
           <div>
-            <span className="text-gray-400">Remaining in shoe:</span>{" "}
+            <span className="text-gray-400">Cards:</span>{" "}
             <span className="text-yellow-500 font-bold">{cardCount}</span>
           </div>
           <div>
-            <span className="text-gray-400">Play #:</span>{" "}
+            <span className="text-gray-400">Play:</span>{" "}
             <span className="text-yellow-500 font-bold">{playNumber}</span>
           </div>
         </div>
       </div>
     
-      <div className="p-3">
-        <div className="flex items-center">
+      <div className="p-1">
+        <div className="flex items-center gap-1">
           <div className="flex flex-1">
             <input 
               type="text" 
@@ -47,32 +50,27 @@ export default function CardInput() {
               value={cardValues}
               onChange={handleInputChange}
               maxLength={12}
-              className="flex-1 bg-gray-800 text-white px-3 py-2 border border-gray-600 focus:border-yellow-500 focus:outline-none rounded-l-md"
-              placeholder="A=1, 2-9=face value, 10/J/Q/K=0"
+              className="flex-1 bg-gray-800 text-white px-2 py-1 text-sm border border-gray-600 focus:border-yellow-500 focus:outline-none rounded-l"
+              placeholder="Cards (A=1, 10/J/Q/K=0)"
             />
             <button 
               onClick={handleClear}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-r-md"
+              className="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded-r"
             >
-              Clear
+              ×
             </button>
           </div>
           
-          {cardValues.length > 0 && (
-            <div className="flex items-center ml-3">
-              <span className="text-xl font-mono bg-gray-800 px-3 py-1 rounded font-bold text-yellow-400 mr-2">{cardValues}</span>
-              <button
-                className="px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-white rounded text-sm whitespace-nowrap"
-                onClick={() => {
-                  if (cardValues.length > 0) {
-                    setCurrentCards(cardValues);
-                  }
-                }}
-              >
-                Apply
-              </button>
-            </div>
-          )}
+          <button
+            className="px-2 py-1 bg-blue-800 hover:bg-blue-700 text-white rounded text-xs whitespace-nowrap"
+            onClick={() => {
+              if (cardValues.length > 0) {
+                setCurrentCards(cardValues);
+              }
+            }}
+          >
+            Apply
+          </button>
         </div>
       </div>
     </div>
