@@ -1,59 +1,35 @@
 import { useBaccaratContext } from "@/context/BaccaratContext";
-
 export default function ShoeVariancePanel() {
-  const { shoeVariance } = useBaccaratContext();
-
+  const { shoeVariance: sv } = useBaccaratContext();
   return (
-    <div className="bg-black border border-gray-800 h-full">
-      <div className="flex items-center px-2 py-1 border-b border-gray-800 gap-1">
-        <span className="text-[8px] text-green-500">◆</span>
-        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-wide">Shoe Variance</span>
+    <div>
+      <div className="flex items-center justify-between px-1.5 py-0.5 border-b border-gray-800">
+        <span className="text-[7px] text-gray-400 font-bold uppercase">Shoe Variance</span>
+        <span className={`text-[7px] font-bold ${sv.volatility === 'HIGH' ? 'text-red-400' : sv.volatility === 'MEDIUM' ? 'text-yellow-400' : 'text-green-500'}`}>{sv.volatility}</span>
       </div>
-      <div className="p-2 space-y-2">
-        <div className="grid grid-cols-3 gap-1">
-          <div className="border border-red-900 bg-red-950 bg-opacity-30 rounded p-1 text-center">
-            <div className="text-[8px] text-red-400 font-bold uppercase">BANKER</div>
-            <div className="text-lg font-black text-white">{shoeVariance.bankerCount}</div>
-            <div className="text-[8px] text-red-400">{shoeVariance.bankerPct}%</div>
+      <div className="px-1.5 py-0.5">
+        <div className="grid grid-cols-3 gap-0.5 mb-0.5">
+          <div className="text-center bg-red-950 border border-red-900 rounded px-0.5 py-0.5">
+            <div className="text-[7px] text-red-400">B</div>
+            <div className="text-[9px] font-black text-white">{sv.bankerCount}</div>
+            <div className="text-[6px] text-red-400">{sv.bankerPct}%</div>
           </div>
-          <div className="border border-cyan-900 bg-cyan-950 bg-opacity-30 rounded p-1 text-center">
-            <div className="text-[8px] text-cyan-400 font-bold uppercase">PLAYER</div>
-            <div className="text-lg font-black text-white">{shoeVariance.playerCount}</div>
-            <div className="text-[8px] text-cyan-400">{shoeVariance.playerPct}%</div>
+          <div className="text-center bg-cyan-950 border border-cyan-900 rounded px-0.5 py-0.5">
+            <div className="text-[7px] text-cyan-400">P</div>
+            <div className="text-[9px] font-black text-white">{sv.playerCount}</div>
+            <div className="text-[6px] text-cyan-400">{sv.playerPct}%</div>
           </div>
-          <div className="border border-yellow-900 bg-yellow-950 bg-opacity-30 rounded p-1 text-center">
-            <div className="text-[8px] text-yellow-400 font-bold uppercase">TIE</div>
-            <div className="text-lg font-black text-white">{shoeVariance.tieCount}</div>
-            <div className="text-[8px] text-yellow-400">{shoeVariance.tiePct}%</div>
+          <div className="text-center bg-yellow-950 border border-yellow-900 rounded px-0.5 py-0.5">
+            <div className="text-[7px] text-yellow-400">T</div>
+            <div className="text-[9px] font-black text-white">{sv.tieCount}</div>
+            <div className="text-[6px] text-yellow-400">{sv.tiePct}%</div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-          <div className="flex justify-between">
-            <span className="text-[9px] text-gray-500">VARIANCE</span>
-            <span className="text-[9px] text-white font-bold">{shoeVariance.variance}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[9px] text-gray-500">Z-SCORE</span>
-            <span className={`text-[9px] font-bold ${Math.abs(shoeVariance.zScore) > 1.5 ? 'text-red-400' : 'text-gray-300'}`}>
-              {shoeVariance.zScore > 0 ? '+' : ''}{shoeVariance.zScore}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[9px] text-gray-500">VOLATILITY</span>
-            <span className={`text-[9px] font-bold ${shoeVariance.volatility === 'HIGH' ? 'text-red-400' : shoeVariance.volatility === 'MEDIUM' ? 'text-yellow-400' : 'text-green-400'}`}>
-              {shoeVariance.volatility}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[9px] text-gray-500">TREND</span>
-            <span className={`text-[9px] font-bold ${shoeVariance.trend === 'NEUTRAL' ? 'text-gray-400' : shoeVariance.trend === 'BANKER' ? 'text-red-400' : shoeVariance.trend === 'PLAYER' ? 'text-cyan-400' : 'text-yellow-400'}`}>
-              {shoeVariance.trend}
-            </span>
-          </div>
-          <div className="col-span-2 flex justify-between">
-            <span className="text-[9px] text-gray-500">CURRENT STREAK</span>
-            <span className="text-[9px] font-bold text-white">{shoeVariance.currentStreak || '—'}</span>
-          </div>
+        <div className="grid grid-cols-2 gap-x-2 text-[7px]">
+          <div className="flex justify-between"><span className="text-gray-600">VAR</span><span className="text-white">{sv.variance}</span></div>
+          <div className="flex justify-between"><span className="text-gray-600">Z</span><span className={Math.abs(sv.zScore) > 1.5 ? 'text-red-400' : 'text-gray-300'}>{sv.zScore}</span></div>
+          <div className="flex justify-between"><span className="text-gray-600">TREND</span><span className={sv.trend === 'BANKER' ? 'text-red-400' : sv.trend === 'PLAYER' ? 'text-cyan-400' : sv.trend === 'TIE' ? 'text-yellow-400' : 'text-gray-500'}>{sv.trend}</span></div>
+          <div className="flex justify-between"><span className="text-gray-600">STK</span><span className="text-white">{sv.currentStreak || '—'}</span></div>
         </div>
       </div>
     </div>

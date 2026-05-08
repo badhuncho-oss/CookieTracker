@@ -15,12 +15,11 @@ import ShoeHistoryPanel from "@/components/ShoeHistoryPanel";
 
 export default function Home() {
   return (
-    <div className="bg-black text-white min-h-screen font-mono text-xs">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
+    <div className="bg-black text-white min-h-screen" style={{ fontSize: '10px', fontFamily: 'monospace' }}>
+      <div className="max-w-full">
         <Header />
 
-        {/* Row 1: Recommendation | Probabilities | AI Performance */}
+        {/* Row 1: Rec | Prob | AI Perf */}
         <div className="grid grid-cols-3 border-b border-gray-800">
           <div className="border-r border-gray-800"><RecommendationPanel /></div>
           <div className="border-r border-gray-800"><ProbabilitiesPanel /></div>
@@ -30,18 +29,16 @@ export default function Home() {
         {/* Signal Bar */}
         <SignalBar />
 
-        {/* Row 2: Dominant Pattern (full width) */}
-        <div className="border-b border-gray-800">
-          <DominantPatternPanel />
-        </div>
+        {/* Row 2: Dominant Pattern */}
+        <div className="border-b border-gray-800"><DominantPatternPanel /></div>
 
-        {/* Row 3: N-Strategy Core | N-Strategy Raw */}
+        {/* Row 3: N-Core | N-Raw */}
         <div className="grid grid-cols-2 border-b border-gray-800">
           <div className="border-r border-gray-800"><NStrategyCorePanel /></div>
           <div><NStrategyRawPanel /></div>
         </div>
 
-        {/* Row 4: Markov Chain | Shoe Variance */}
+        {/* Row 4: Markov | Shoe Variance */}
         <div className="grid grid-cols-2 border-b border-gray-800">
           <div className="border-r border-gray-800"><MarkovChainPanel /></div>
           <div><ShoeVariancePanel /></div>
@@ -54,7 +51,7 @@ export default function Home() {
         <div className="border-b border-gray-800"><BacktestingPanel /></div>
 
         {/* Row 7: Enter Plays | Shoe History */}
-        <div className="grid grid-cols-3 min-h-[200px]">
+        <div className="grid grid-cols-3">
           <div className="border-r border-gray-800"><EnterPlaysPanel /></div>
           <div className="col-span-2"><ShoeHistoryPanel /></div>
         </div>
