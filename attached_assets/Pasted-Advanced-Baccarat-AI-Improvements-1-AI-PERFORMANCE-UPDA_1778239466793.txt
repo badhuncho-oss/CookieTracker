@@ -1,0 +1,347 @@
+Advanced Baccarat.AI Improvements
+
+1. AI PERFORMANCE UPDATE
+Add PUSH tracking inside AI Performance.
+
+AI Performance must show:
+- Wins
+- Losses
+- Pushes
+- Skipped
+- Accuracy
+- Win Rate
+- Loss Rate
+- Push Rate
+
+Rules:
+- PUSH = Tie result during Banker/Player recommendation
+- PUSH does NOT count as:
+  - win
+  - loss
+  - broken streak
+- PUSH should be tracked separately
+
+Accuracy formula:
+wins / (wins + losses)
+
+Do NOT include:
+- pushes
+- skipped
+- no-bet hands
+
+--------------------------------------------------
+
+2. SECOND RECOMMENDATION SYSTEM
+Add:
+SECOND RECOMMENDATION
+
+Purpose:
+- AI provides a secondary directional bias even when main AI says NO BET.
+- Secondary recommendation is informational/aggressive mode.
+- Secondary recommendation ALWAYS tracks performance.
+
+Main Recommendation:
+- selective
+- confidence filtered
+- can NO BET
+
+Second Recommendation:
+- always outputs Banker or Player
+- lower confidence threshold
+- more aggressive
+- no NO BET allowed unless insufficient data
+
+Example:
+MAIN:
+NO BET
+
+SECOND:
+PLAYER 54%
+
+--------------------------------------------------
+
+3. SECOND AI PERFORMANCE
+Add separate tracking for:
+SECOND AI PERFORMANCE
+
+Track:
+- wins
+- losses
+- pushes
+- accuracy
+- streak
+- ROI
+- net P/L
+
+Rules:
+- second recommendation records ALL resolved hands
+- no skipping except insufficient data
+- Tie = PUSH unless Tie Mode enabled
+
+Purpose:
+- compare:
+  - selective AI
+  - aggressive always-bet AI
+
+--------------------------------------------------
+
+4. REGIME STABILITY SCORE
+Add:
+STABILITY SCORE 0–100
+
+Based on:
+- pattern consistency
+- anomaly frequency
+- transition pressure
+- volatility
+- Markov agreement
+
+Meaning:
+- 80–100 = stable
+- 60–79 = moderate
+- below 60 = unstable
+
+Low stability:
+- reduce confidence
+- increase NO BET tendency
+
+--------------------------------------------------
+
+5. TRANSITION PRESSURE
+Add:
+TRANSITION PRESSURE
+
+States:
+- LOW
+- BUILDING
+- HIGH
+- CRITICAL
+
+This shows how close the regime is to collapsing.
+
+--------------------------------------------------
+
+6. SIGNAL AGREEMENT MATRIX
+Show:
+
+NCORE: B
+MARKOV: P
+TEXTURE: B
+VARIANCE: B
+REGIME: NO BET
+
+This instantly reveals conflicts.
+
+--------------------------------------------------
+
+7. SIGNAL WEIGHT VISUALIZATION
+Show actual AI weighting:
+
+NCORE      35%
+MARKOV     30%
+TEXTURE    15%
+VARIANCE   10%
+VOLATILITY 10%
+
+--------------------------------------------------
+
+8. PREDICTION DECAY
+Older patterns lose influence.
+
+Recent hands weighted higher.
+
+Add:
+- exponential weighting
+- recency weighting
+
+Last 5–10 hands matter more than early shoe hands.
+
+--------------------------------------------------
+
+9. SAMPLE QUALITY SCORE
+Add:
+SAMPLE QUALITY
+
+States:
+- LOW
+- FAIR
+- GOOD
+- STRONG
+
+Based on:
+- sample size
+- regime stability
+- signal agreement
+
+--------------------------------------------------
+
+10. FALSE SIGNAL DETECTOR
+Detect:
+- fake streaks
+- unstable chop
+- weak transitions
+- low-sample Markov traps
+
+Result:
+- reduce confidence
+- increase NO BET
+
+--------------------------------------------------
+
+11. LIVE EDGE ESTIMATE
+Show:
+EDGE ESTIMATE
+
+Examples:
++1.2%
+-0.4%
++0.0%
+
+If edge <= 0:
+prefer NO BET.
+
+--------------------------------------------------
+
+12. CONFIDENCE BREAKDOWN
+Instead of single confidence only:
+
+BASE:
+52%
+
++NCORE:
++8%
+
++MARKOV:
++5%
+
+-VOLATILITY:
+-6%
+
+FINAL:
+59%
+
+--------------------------------------------------
+
+13. SHOE PHASE DETECTION
+Detect:
+- EARLY SHOE
+- MID SHOE
+- LATE SHOE
+
+Late shoe behavior may differ due to remaining composition.
+
+--------------------------------------------------
+
+14. DOMINANT SIDE PRESSURE
+Show:
+- Banker Pressure
+- Player Pressure
+
+Not just counts:
+measure directional momentum pressure.
+
+--------------------------------------------------
+
+15. TIE DISTORTION INDEX
+Show:
+- LOW
+- MODERATE
+- HIGH
+
+High tie distortion:
+- globally reduce confidence
+
+--------------------------------------------------
+
+16. EXPECTED VARIANCE ZONE
+Show:
+- LOW RISK
+- NORMAL
+- HIGH SWING
+- CHAOTIC
+
+--------------------------------------------------
+
+17. BET QUALITY SCORE
+Grade:
+- A+
+- A
+- B
+- C
+- D
+
+Based on:
+- agreement
+- stability
+- volatility
+- transition state
+
+--------------------------------------------------
+
+18. SMART NO BET TYPES
+Differentiate NO BET reasons:
+
+- NO BET: LOW CONFIDENCE
+- NO BET: TRANSITION
+- NO BET: CHAOTIC SHOE
+- NO BET: SIGNAL CONFLICT
+- NO BET: LOW SAMPLE
+
+--------------------------------------------------
+
+19. MEMORY WINDOW SYSTEM
+Add:
+SHORT MEMORY:
+- last 6 hands
+
+MID MEMORY:
+- last 15 hands
+
+LONG MEMORY:
+- full shoe
+
+Compare:
+- short-term trend
+- long-term regime
+
+--------------------------------------------------
+
+20. ANOMALY CLUSTER DETECTOR
+Detect:
+- anomaly pressure
+- clustered anomalies
+- possible regime collapse
+
+--------------------------------------------------
+
+21. REAL EXPECTANCY
+Show:
+Expected value per flat bet.
+
+Example:
+EV:
++₱8
+-₱14
+
+--------------------------------------------------
+
+22. SOFT RESET / RECALIBRATION MODE
+If regime collapses badly:
+enter:
+RECALIBRATION MODE
+
+During recalibration:
+- lower confidence cap
+- more NO BET tendency
+- rebuild dominant regime slowly
+
+--------------------------------------------------
+
+23. IMPORTANT LOGIC RULE
+AI should NOT predict every hand.
+
+Strong AI behavior:
+- selective betting
+- avoiding unstable states
+- preferring high-quality conditions
+- prioritizing regime stability over action frequency

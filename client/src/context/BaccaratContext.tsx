@@ -4,49 +4,50 @@ import { apiRequest } from "@/lib/queryClient";
 import {
   computeNStrategies, computeNStrategiesRaw, computeMarkov, computeShoeVariance,
   computeShoeTexture, computeTieAnalysis, computeSignal, computeBacktesting,
-  computeDominantPattern,
+  computeDominantPattern, computeStabilityScore, computeTransitionPressure,
+  computeSignalAgreementMatrix, computeShoePhase, computeBetQualityGrade,
+  computeSampleQuality, computeNoBetType, computeVarianceZone,
+  computeDominantSidePressure, computeTieDistortionIndex, computeMemoryWindows,
+  computeConfidenceBreakdown, computeSecondRecommendation, computeSecondAIBacktest,
+  computeEdgeEstimate, computeEV, computeAnomalyCluster, computeRecalibrationState,
   NStrategyEntry, MarkovData, ShoeVarianceData, ShoeTextureData,
-  TieAnalysisData, SignalData, BacktestingData, DominantPatternData
+  TieAnalysisData, SignalData, BacktestingData, DominantPatternData,
+  SignalAgreementMatrix, DominantSidePressure, MemoryWindows,
+  ConfidenceBreakdown, SecondRecData, SecondAIPerf, AnomalyCluster,
+  RecalibrationState, TransitionPressure, ShoePhase, BetQualityGrade,
+  SampleQuality, NoBetType, VarianceZone, TieDistortionLevel,
 } from "@/utils/analytics";
 
 interface BetRecommendation {
   type: 'player' | 'banker' | 'tie' | '';
-  text: string;
-  units: number;
-  confidence: number;
+  text: string; units: number; confidence: number;
 }
 
 interface BaccaratContextType {
-  cardCount: number;
-  playNumber: number;
-  currentCards: string;
-  gameResults: string[];
-  recommendation: BetRecommendation;
-  secondaryRecommendation: BetRecommendation | null;
-  winStreak: number;
-  lossStreak: number;
-  totalCorrect: number;
-  totalWrong: number;
-  statistics: { playerWins: number; bankerWins: number; tieWins: number; totalPlays: number; };
-  nStrategies: NStrategyEntry[];
-  nStrategiesRaw: NStrategyEntry[];
-  markov: MarkovData;
-  shoeVariance: ShoeVarianceData;
-  shoeTexture: ShoeTextureData;
-  tieAnalysis: TieAnalysisData;
-  signalData: SignalData;
-  backtesting: BacktestingData;
+  cardCount: number; playNumber: number; currentCards: string; gameResults: string[];
+  recommendation: BetRecommendation; secondaryRecommendation: BetRecommendation | null;
+  winStreak: number; lossStreak: number; totalCorrect: number; totalWrong: number; totalPushes: number; totalSkipped: number;
+  statistics: { playerWins: number; bankerWins: number; tieWins: number; totalPlays: number };
+  nStrategies: NStrategyEntry[]; nStrategiesRaw: NStrategyEntry[];
+  markov: MarkovData; shoeVariance: ShoeVarianceData; shoeTexture: ShoeTextureData;
+  tieAnalysis: TieAnalysisData; signalData: SignalData; backtesting: BacktestingData;
   dominantPattern: DominantPatternData;
-  flatBetAmount: number;
-  setFlatBetAmount: (v: number) => void;
-  aiMode: 'standard' | 'advanced';
-  setAiMode: (mode: 'standard' | 'advanced') => void;
+  // New analytics
+  stabilityScore: number; transitionPressure: TransitionPressure;
+  signalAgreement: SignalAgreementMatrix; shoePhase: ShoePhase;
+  betQualityGrade: BetQualityGrade; sampleQuality: SampleQuality;
+  noBetType: NoBetType; varianceZone: VarianceZone;
+  dominantSidePressure: DominantSidePressure; tieDistortionIndex: TieDistortionLevel;
+  memoryWindows: MemoryWindows; confidenceBreakdown: ConfidenceBreakdown;
+  secondRec: SecondRecData; secondAIPerf: SecondAIPerf;
+  edgeEstimate: number; ev: number;
+  anomalyCluster: AnomalyCluster; recalibration: RecalibrationState;
+  flatBetAmount: number; setFlatBetAmount: (v: number) => void;
+  aiMode: 'standard' | 'advanced'; setAiMode: (mode: 'standard' | 'advanced') => void;
   setCurrentCards: (cards: string) => void;
-  incrementCardCount: () => void;
-  decrementCardCount: () => void;
+  incrementCardCount: () => void; decrementCardCount: () => void;
   recordOutcome: (outcome: 'player' | 'banker' | 'tie') => void;
-  undoLastOutcome: () => void;
-  resetGame: () => void;
+  undoLastOutcome: () => void; resetGame: () => void;
 }
 
 const BaccaratContext = createContext<BaccaratContextType | undefined>(undefined);
@@ -60,6 +61,8 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
   const [lossStreak, setLossStreak] = useState<number>(0);
   const [totalCorrect, setTotalCorrect] = useState<number>(0);
   const [totalWrong, setTotalWrong] = useState<number>(0);
+  const [totalPushes, setTotalPushes] = useState<number>(0);
+  const [totalSkipped, setTotalSkipped] = useState<number>(0);
   const [aiMode, setAiMode] = useState<'standard' | 'advanced'>('advanced');
   const [flatBetAmount, setFlatBetAmount] = useState<number>(600);
   const [statistics, setStatistics] = useState({ playerWins: 0, bankerWins: 0, tieWins: 0, totalPlays: 0 });
@@ -135,6 +138,7 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
     }
   }, [cardCount, playNumber, gameResults]);
 
+  // ─── Core computed analytics ─────────────────────────────────────────────
   const nStrategies = useMemo(() => computeNStrategies(gameResults), [gameResults]);
   const nStrategiesRaw = useMemo(() => computeNStrategiesRaw(gameResults), [gameResults]);
   const markov = useMemo(() => computeMarkov(gameResults), [gameResults]);
@@ -145,27 +149,49 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
   const backtesting = useMemo(() => computeBacktesting(gameResults, flatBetAmount), [gameResults, flatBetAmount]);
   const dominantPattern = useMemo(() => computeDominantPattern(gameResults), [gameResults]);
 
+  // ─── Advanced analytics ──────────────────────────────────────────────────
+  const stabilityScore = useMemo(() => computeStabilityScore(dominantPattern, markov, shoeVariance), [dominantPattern, markov, shoeVariance]);
+  const transitionPressure = useMemo(() => computeTransitionPressure(dominantPattern, stabilityScore), [dominantPattern, stabilityScore]);
+  const signalAgreement = useMemo(() => computeSignalAgreementMatrix(nStrategies, markov, shoeTexture, shoeVariance, dominantPattern), [nStrategies, markov, shoeTexture, shoeVariance, dominantPattern]);
+  const shoePhase = useMemo(() => computeShoePhase(gameResults.length), [gameResults]);
+  const betQualityGrade = useMemo(() => computeBetQualityGrade(recommendation.confidence, signalAgreement.agreementPct, stabilityScore, transitionPressure), [recommendation.confidence, signalAgreement.agreementPct, stabilityScore, transitionPressure]);
+  const varianceZone = useMemo(() => computeVarianceZone(shoeVariance, tieAnalysis), [shoeVariance, tieAnalysis]);
+  const sampleQuality = useMemo(() => computeSampleQuality(gameResults.filter(r => r !== 'tie').length, stabilityScore, signalAgreement.agreementPct), [gameResults, stabilityScore, signalAgreement]);
+  const noBetType = useMemo(() => computeNoBetType(recommendation.confidence, dominantPattern, signalAgreement.agreementPct, sampleQuality, varianceZone), [recommendation.confidence, dominantPattern, signalAgreement, sampleQuality, varianceZone]);
+  const dominantSidePressure = useMemo(() => computeDominantSidePressure(gameResults), [gameResults]);
+  const tieDistortionIndex = useMemo(() => computeTieDistortionIndex(tieAnalysis), [tieAnalysis]);
+  const memoryWindows = useMemo(() => computeMemoryWindows(gameResults), [gameResults]);
+  const confidenceBreakdown = useMemo(() => computeConfidenceBreakdown(nStrategies, markov, stabilityScore, dominantPattern), [nStrategies, markov, stabilityScore, dominantPattern]);
+  const secondRec = useMemo(() => computeSecondRecommendation(gameResults, nStrategies, markov), [gameResults, nStrategies, markov]);
+  const secondAIPerf = useMemo(() => computeSecondAIBacktest(gameResults, flatBetAmount), [gameResults, flatBetAmount]);
+  const edgeEstimate = useMemo(() => computeEdgeEstimate(recommendation.confidence, recommendation.type), [recommendation]);
+  const ev = useMemo(() => computeEV(recommendation.confidence, recommendation.type, flatBetAmount), [recommendation, flatBetAmount]);
+  const anomalyCluster = useMemo(() => computeAnomalyCluster(dominantPattern), [dominantPattern]);
+  const recalibration = useMemo(() => computeRecalibrationState(dominantPattern, stabilityScore, backtesting.accuracy), [dominantPattern, stabilityScore, backtesting]);
+
   const recordOutcome = (outcome: 'player' | 'banker' | 'tie') => {
     const predicted = recommendation.type;
     const isPush = outcome === 'tie' && (predicted === 'banker' || predicted === 'player');
     if (predicted !== '') {
-      if (predicted === outcome) {
+      if (isPush) {
+        setTotalPushes(p => p + 1);
+      } else if (predicted === outcome) {
         setTotalCorrect(p => p + 1);
         setWinStreak(p => p + 1);
         setLossStreak(0);
-      } else if (!isPush) {
+      } else {
         setTotalWrong(p => p + 1);
         setLossStreak(p => p + 1);
         setWinStreak(0);
       }
-      // push doesn't change streaks
+    } else {
+      setTotalSkipped(p => p + 1);
     }
     const newResults = [...gameResults, outcome];
     setGameResults(newResults);
     updateStatistics(newResults);
     setPlayNumber(p => p + 1);
-    const cardsUsed = currentCards.length;
-    setCardCount(p => Math.max(0, p - cardsUsed));
+    setCardCount(p => Math.max(0, p - currentCards.length));
     updateRecommendations(newResults, "");
     setCurrentCards("");
   };
@@ -182,7 +208,7 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
   const resetGame = () => {
     setCardCount(416); setPlayNumber(0); setCurrentCards("");
     setGameResults([]); setWinStreak(0); setLossStreak(0);
-    setTotalCorrect(0); setTotalWrong(0);
+    setTotalCorrect(0); setTotalWrong(0); setTotalPushes(0); setTotalSkipped(0);
     setStatistics({ playerWins: 0, bankerWins: 0, tieWins: 0, totalPlays: 0 });
     setRecommendation({ type: '', text: 'NO BET', units: 0, confidence: 50 });
     setSecondaryRecommendation(null);
@@ -193,11 +219,14 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
     <BaccaratContext.Provider value={{
       cardCount, playNumber, currentCards, gameResults,
       recommendation, secondaryRecommendation,
-      winStreak, lossStreak, totalCorrect, totalWrong, statistics,
+      winStreak, lossStreak, totalCorrect, totalWrong, totalPushes, totalSkipped, statistics,
       nStrategies, nStrategiesRaw, markov, shoeVariance, shoeTexture,
       tieAnalysis, signalData, backtesting, dominantPattern,
-      flatBetAmount, setFlatBetAmount,
-      aiMode, setAiMode, setCurrentCards,
+      stabilityScore, transitionPressure, signalAgreement, shoePhase,
+      betQualityGrade, sampleQuality, noBetType, varianceZone,
+      dominantSidePressure, tieDistortionIndex, memoryWindows, confidenceBreakdown,
+      secondRec, secondAIPerf, edgeEstimate, ev, anomalyCluster, recalibration,
+      flatBetAmount, setFlatBetAmount, aiMode, setAiMode, setCurrentCards,
       incrementCardCount: () => setCardCount(p => p + 1),
       decrementCardCount: () => setCardCount(p => Math.max(0, p - 1)),
       recordOutcome, undoLastOutcome, resetGame
