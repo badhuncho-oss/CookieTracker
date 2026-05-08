@@ -1,19 +1,18 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { getPrediction, getAdvancedPrediction } from "@/utils/prediction";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
+import { getAdvancedPrediction } from "@/utils/prediction";
 import { apiRequest } from "@/lib/queryClient";
+import {
+  computeNStrategies, computeMarkov, computeShoeVariance,
+  computeShoeTexture, computeTieAnalysis, computeSignal, computeBacktesting,
+  NStrategyEntry, MarkovData, ShoeVarianceData, ShoeTextureData,
+  TieAnalysisData, SignalData, BacktestingData
+} from "@/utils/analytics";
 
 interface BetRecommendation {
   type: 'player' | 'banker' | 'tie' | '';
   text: string;
   units: number;
   confidence: number;
-}
-
-interface BettingHistory {
-  play: number;
-  bet: string;
-  result: 'win' | 'loss';
-  chipChange: string;
 }
 
 interface BaccaratContextType {
@@ -25,372 +24,169 @@ interface BaccaratContextType {
   secondaryRecommendation: BetRecommendation | null;
   winStreak: number;
   lossStreak: number;
-  statistics: {
-    playerWins: number;
-    bankerWins: number;
-    tieWins: number;
-    totalPlays: number;
-  };
-  bettingMode: 'standard' | 'method345' | 'method321';
-  setBettingMode: (mode: 'standard' | 'method345' | 'method321') => void;
-  isHighBetsMode: boolean;
-  setHighBetsMode: (enabled: boolean) => void;
-  bettingHistory: BettingHistory[];
+  totalCorrect: number;
+  totalWrong: number;
+  statistics: { playerWins: number; bankerWins: number; tieWins: number; totalPlays: number; };
+  nStrategies: NStrategyEntry[];
+  markov: MarkovData;
+  shoeVariance: ShoeVarianceData;
+  shoeTexture: ShoeTextureData;
+  tieAnalysis: TieAnalysisData;
+  signalData: SignalData;
+  backtesting: BacktestingData;
+  aiMode: 'standard' | 'advanced';
+  setAiMode: (mode: 'standard' | 'advanced') => void;
   setCurrentCards: (cards: string) => void;
   incrementCardCount: () => void;
   decrementCardCount: () => void;
   recordOutcome: (outcome: 'player' | 'banker' | 'tie') => void;
+  undoLastOutcome: () => void;
   resetGame: () => void;
-  aiMode: 'standard' | 'advanced';
-  setAiMode: (mode: 'standard' | 'advanced') => void;
 }
 
 const BaccaratContext = createContext<BaccaratContextType | undefined>(undefined);
 
 export function BaccaratProvider({ children }: { children: ReactNode }) {
-  // Game state
   const [cardCount, setCardCount] = useState<number>(416);
   const [playNumber, setPlayNumber] = useState<number>(0);
   const [currentCards, setCurrentCards] = useState<string>("");
   const [gameResults, setGameResults] = useState<string[]>([]);
   const [winStreak, setWinStreak] = useState<number>(0);
   const [lossStreak, setLossStreak] = useState<number>(0);
+  const [totalCorrect, setTotalCorrect] = useState<number>(0);
+  const [totalWrong, setTotalWrong] = useState<number>(0);
   const [aiMode, setAiMode] = useState<'standard' | 'advanced'>('advanced');
-  
-  // Betting system state
-  const [bettingMode, setBettingMode] = useState<'standard' | 'method345' | 'method321'>('standard');
-  const [isHighBetsMode, setHighBetsMode] = useState<boolean>(false);
-  const [bettingHistory, setBettingHistory] = useState<BettingHistory[]>([]);
-  
-  // Statistics
-  const [statistics, setStatistics] = useState({
-    playerWins: 0,
-    bankerWins: 0,
-    tieWins: 0,
-    totalPlays: 0
-  });
-  
-  // Recommendation state
-  const [recommendation, setRecommendation] = useState<BetRecommendation>({
-    type: '',
-    text: '',
-    units: 0,
-    confidence: 70,
-  });
-  
+  const [statistics, setStatistics] = useState({ playerWins: 0, bankerWins: 0, tieWins: 0, totalPlays: 0 });
+  const [recommendation, setRecommendation] = useState<BetRecommendation>({ type: '', text: 'NO BET', units: 0, confidence: 50 });
   const [secondaryRecommendation, setSecondaryRecommendation] = useState<BetRecommendation | null>(null);
-  
-  // Save/Load state from backend
+
   useEffect(() => {
-    const loadGameState = async () => {
+    const load = async () => {
       try {
-        const response = await fetch('/api/game-state');
-        if (response.ok) {
-          const data = await response.json();
+        const res = await fetch('/api/game-state');
+        if (res.ok) {
+          const data = await res.json();
           if (data) {
             setCardCount(data.cardCount || 416);
             setPlayNumber(data.playNumber || 0);
-            setGameResults(data.gameResults || []);
-            updateRecommendations(data.gameResults || [], "");
-            updateStatistics(data.gameResults || []);
+            const results = data.gameResults || [];
+            setGameResults(results);
+            updateStatistics(results);
+            updateRecommendations(results, "");
           }
         }
-      } catch (error) {
-        console.error("Failed to load game state:", error);
-      }
+      } catch (e) { console.error("Failed to load game state:", e); }
     };
-    
-    loadGameState();
+    load();
   }, []);
-  
-  // Update statistics whenever game results change
+
   const updateStatistics = (results: string[]) => {
-    const stats = {
-      playerWins: 0,
-      bankerWins: 0,
-      tieWins: 0,
+    setStatistics({
+      playerWins: results.filter(r => r === 'player').length,
+      bankerWins: results.filter(r => r === 'banker').length,
+      tieWins: results.filter(r => r === 'tie').length,
       totalPlays: results.length
-    };
-    
-    results.forEach(result => {
-      if (result === 'player') stats.playerWins++;
-      else if (result === 'banker') stats.bankerWins++;
-      else if (result === 'tie') stats.tieWins++;
     });
-    
-    setStatistics(stats);
   };
-  
-  // Update win/loss streak based on last recommendation and outcome
-  const updateStreak = (outcome: string) => {
-    if (recommendation.type === '') {
-      // Reset streaks if there was no recommendation
-      setWinStreak(0);
-      setLossStreak(0);
+
+  const updateRecommendations = (results: string[], cards: string) => {
+    if (results.length < 1) {
+      setRecommendation({ type: 'banker', text: 'BANKER', units: 1, confidence: 57 });
+      setSecondaryRecommendation(null);
       return;
     }
-    
-    const lastRecommendation = recommendation.type;
-    if (outcome === lastRecommendation) {
-      // Won
-      setWinStreak(prev => prev + 1);
-      setLossStreak(0);
-    } else if (outcome === 'tie' && secondaryRecommendation?.type === 'tie') {
-      // Won on secondary bet
-      setWinStreak(prev => prev + 1);
-      setLossStreak(0);
-    } else {
-      // Lost
-      setLossStreak(prev => prev + 1);
-      setWinStreak(0);
-    }
-  };
-  
-  const updateRecommendations = (results: string[], currentCardValues: string) => {
-    if (aiMode === 'advanced') {
-      // Use advanced prediction
-      const prediction = getAdvancedPrediction(results, currentCardValues);
-      
-      // Primary recommendation
-      const primaryType = prediction.primaryBet.type;
-      const primaryUnits = prediction.primaryBet.units;
-      const primaryConfidence = prediction.primaryBet.confidence;
-      
-      let primaryText = '';
-      if (primaryType) {
-        const typeCapitalized = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
-        primaryText = primaryUnits > 0 ? `${typeCapitalized} x${primaryUnits}` : typeCapitalized;
-      }
-      
-      setRecommendation({
-        type: primaryType,
-        text: primaryText,
-        units: primaryUnits,
-        confidence: primaryConfidence,
+    const prediction = getAdvancedPrediction(results, cards);
+    const pt = prediction.primaryBet.type;
+    setRecommendation({
+      type: pt,
+      text: pt ? pt.toUpperCase() : 'NO BET',
+      units: prediction.primaryBet.units,
+      confidence: prediction.primaryBet.confidence
+    });
+    if (prediction.secondaryBet && prediction.secondaryBet.type) {
+      const st = prediction.secondaryBet.type;
+      setSecondaryRecommendation({
+        type: st,
+        text: st.toUpperCase(),
+        units: prediction.secondaryBet.units,
+        confidence: prediction.secondaryBet.confidence
       });
-      
-      // Secondary recommendation (if any)
-      if (prediction.secondaryBet) {
-        const secondaryType = prediction.secondaryBet.type;
-        const secondaryUnits = prediction.secondaryBet.units;
-        const secondaryConfidence = prediction.secondaryBet.confidence;
-        
-        let secondaryText = '';
-        if (secondaryType) {
-          const typeCapitalized = secondaryType.charAt(0).toUpperCase() + secondaryType.slice(1);
-          secondaryText = secondaryUnits > 0 ? `${typeCapitalized} x${secondaryUnits}` : typeCapitalized;
-        }
-        
-        setSecondaryRecommendation({
-          type: secondaryType,
-          text: secondaryText,
-          units: secondaryUnits,
-          confidence: secondaryConfidence,
-        });
-      } else {
-        setSecondaryRecommendation(null);
-      }
     } else {
-      // Use standard prediction (for backward compatibility)
-      const { type, units, confidence } = getPrediction(results);
-      
-      let text = '';
-      if (type) {
-        const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
-        text = units > 0 ? `${typeCapitalized} x${units}` : typeCapitalized;
-      }
-      
-      setRecommendation({
-        type,
-        text,
-        units,
-        confidence,
-      });
-      
       setSecondaryRecommendation(null);
     }
   };
-  
-  const saveGameState = async () => {
-    try {
-      await apiRequest('POST', '/api/game-state', {
-        cardCount,
-        playNumber,
-        gameResults,
-      });
-    } catch (error) {
-      console.error("Failed to save game state:", error);
-    }
-  };
-  
-  // Effect to save state when it changes
+
+  useEffect(() => {
+    if (gameResults.length > 0) updateRecommendations(gameResults, currentCards);
+  }, [currentCards, aiMode]);
+
   useEffect(() => {
     if (playNumber > 0) {
-      saveGameState();
+      apiRequest('POST', '/api/game-state', { cardCount, playNumber, gameResults }).catch(() => {});
     }
   }, [cardCount, playNumber, gameResults]);
-  
-  const incrementCardCount = () => {
-    setCardCount(prev => prev + 1);
-  };
-  
-  const decrementCardCount = () => {
-    if (cardCount > 0) {
-      setCardCount(prev => prev - 1);
-    }
-  };
-  
+
+  const nStrategies = useMemo(() => computeNStrategies(gameResults), [gameResults]);
+  const markov = useMemo(() => computeMarkov(gameResults), [gameResults]);
+  const shoeVariance = useMemo(() => computeShoeVariance(gameResults), [gameResults]);
+  const shoeTexture = useMemo(() => computeShoeTexture(gameResults), [gameResults]);
+  const tieAnalysis = useMemo(() => computeTieAnalysis(gameResults), [gameResults]);
+  const signalData = useMemo(() => computeSignal(gameResults, nStrategies), [gameResults, nStrategies]);
+  const backtesting = useMemo(() => computeBacktesting(gameResults, 600), [gameResults]);
+
   const recordOutcome = (outcome: 'player' | 'banker' | 'tie') => {
-    // Update streak
-    updateStreak(outcome);
-    
-    // Record the outcome
+    const predicted = recommendation.type;
+    const won = predicted !== '' && predicted === outcome;
+    const isPush = outcome === 'tie' && predicted !== 'tie';
+    if (predicted !== '') {
+      if (won) {
+        setTotalCorrect(p => p + 1);
+        setWinStreak(p => p + 1);
+        setLossStreak(0);
+      } else if (!isPush) {
+        setTotalWrong(p => p + 1);
+        setLossStreak(p => p + 1);
+        setWinStreak(0);
+      }
+    }
     const newResults = [...gameResults, outcome];
     setGameResults(newResults);
-    
-    // Update statistics
     updateStatistics(newResults);
-    
-    // Update play number
-    setPlayNumber(prev => prev + 1);
-    
-    // Update card count (decrease by number of cards used)
+    setPlayNumber(p => p + 1);
     const cardsUsed = currentCards.length;
-    setCardCount(prev => Math.max(0, prev - cardsUsed));
-    
-    // Get the next prediction
+    setCardCount(p => Math.max(0, p - cardsUsed));
     updateRecommendations(newResults, "");
-    
-    // Clear current cards
     setCurrentCards("");
   };
-  
-  // Update recommendations when card values change
-  useEffect(() => {
-    if (gameResults.length > 0) {
-      updateRecommendations(gameResults, currentCards);
-    }
-  }, [currentCards, aiMode]);
-  
+
+  const undoLastOutcome = () => {
+    if (gameResults.length === 0) return;
+    const newResults = gameResults.slice(0, -1);
+    setGameResults(newResults);
+    updateStatistics(newResults);
+    setPlayNumber(p => Math.max(0, p - 1));
+    updateRecommendations(newResults, "");
+  };
+
   const resetGame = () => {
-    setCardCount(416);
-    setPlayNumber(0);
-    setCurrentCards("");
-    setGameResults([]);
-    setWinStreak(0);
-    setLossStreak(0);
-    setStatistics({
-      playerWins: 0,
-      bankerWins: 0,
-      tieWins: 0,
-      totalPlays: 0
-    });
-    setRecommendation({
-      type: '',
-      text: '',
-      units: 0,
-      confidence: 70,
-    });
+    setCardCount(416); setPlayNumber(0); setCurrentCards("");
+    setGameResults([]); setWinStreak(0); setLossStreak(0);
+    setTotalCorrect(0); setTotalWrong(0);
+    setStatistics({ playerWins: 0, bankerWins: 0, tieWins: 0, totalPlays: 0 });
+    setRecommendation({ type: '', text: 'NO BET', units: 0, confidence: 50 });
     setSecondaryRecommendation(null);
-    
-    // Reset on backend
-    apiRequest('POST', '/api/reset-game', {});
-  };
-  
-  // Update betting history when a result is recorded
-  const updateBettingHistory = (outcome: string, didWin: boolean) => {
-    // Skip if there's no recommendation
-    if (recommendation.type === '') return;
-    
-    // Create history entry
-    const betText = recommendation.text;
-    const chipChange = didWin ? `+${recommendation.units}` : `-${recommendation.units}`;
-    
-    const historyEntry: BettingHistory = {
-      play: playNumber + 1,
-      bet: betText,
-      result: didWin ? 'win' : 'loss',
-      chipChange
-    };
-    
-    // Add to history
-    setBettingHistory(prev => [historyEntry, ...prev].slice(0, 15));  // Keep most recent 15 entries
-  };
-  
-  // Calculate units based on betting mode
-  const calculateUnits = (type: string, confidence: number): number => {
-    // Base calculation on standard mode
-    let units = 1;
-    if (confidence > 85) units = 3;
-    if (confidence > 95) units = 5;
-    
-    // Method 3-4-5: Increases for wins, decreases for losses
-    if (bettingMode === 'method345') {
-      if (winStreak > 0) {
-        units = Math.min(5, winStreak + 2);  // Start at 3, max at 5
-      } else if (lossStreak > 0) {
-        units = Math.max(1, 3 - lossStreak);  // Start at 3, min at 1
-      } else {
-        units = 3; // Default start
-      }
-    }
-    
-    // Method 3-2-1: Decreases for wins, increases for losses
-    else if (bettingMode === 'method321') {
-      if (winStreak > 0) {
-        units = Math.max(1, 3 - winStreak);  // Start at 3, min at 1
-      } else if (lossStreak > 0) {
-        units = Math.min(5, lossStreak + 2);  // Start at 3, max at 5
-      } else {
-        units = 3; // Default start
-      }
-    }
-    
-    // High Bets Mode: Allow up to 9 units for high confidence
-    if (isHighBetsMode && confidence > 90) {
-      if (confidence > 98) return 9;
-      if (confidence > 95) return 7;
-    }
-    
-    return units;
-  };
-  
-  // Override the recordOutcome to also update betting history
-  const recordOutcomeWithHistory = (outcome: 'player' | 'banker' | 'tie') => {
-    const didWin = 
-      outcome === recommendation.type || 
-      (outcome === 'tie' && secondaryRecommendation?.type === 'tie');
-    
-    // Update betting history
-    updateBettingHistory(outcome, didWin);
-    
-    // Call original recordOutcome
-    recordOutcome(outcome);
+    apiRequest('POST', '/api/reset-game', {}).catch(() => {});
   };
 
   return (
     <BaccaratContext.Provider value={{
-      cardCount,
-      playNumber,
-      currentCards,
-      gameResults,
-      recommendation,
-      secondaryRecommendation,
-      winStreak,
-      lossStreak,
-      statistics,
-      bettingMode,
-      setBettingMode,
-      isHighBetsMode,
-      setHighBetsMode,
-      bettingHistory,
-      setCurrentCards,
-      incrementCardCount,
-      decrementCardCount,
-      recordOutcome: recordOutcomeWithHistory,
-      resetGame,
-      aiMode,
-      setAiMode,
+      cardCount, playNumber, currentCards, gameResults, recommendation, secondaryRecommendation,
+      winStreak, lossStreak, totalCorrect, totalWrong, statistics,
+      nStrategies, markov, shoeVariance, shoeTexture, tieAnalysis, signalData, backtesting,
+      aiMode, setAiMode, setCurrentCards,
+      incrementCardCount: () => setCardCount(p => p + 1),
+      decrementCardCount: () => setCardCount(p => Math.max(0, p - 1)),
+      recordOutcome, undoLastOutcome, resetGame
     }}>
       {children}
     </BaccaratContext.Provider>
@@ -398,9 +194,7 @@ export function BaccaratProvider({ children }: { children: ReactNode }) {
 }
 
 export function useBaccaratContext() {
-  const context = useContext(BaccaratContext);
-  if (context === undefined) {
-    throw new Error("useBaccaratContext must be used within a BaccaratProvider");
-  }
-  return context;
+  const ctx = useContext(BaccaratContext);
+  if (!ctx) throw new Error("useBaccaratContext must be used within a BaccaratProvider");
+  return ctx;
 }
