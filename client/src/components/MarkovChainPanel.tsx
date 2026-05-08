@@ -10,16 +10,19 @@ export default function MarkovChainPanel() {
           <span className="text-[8px] text-green-500">◆</span>
           <span className="text-[9px] font-bold text-gray-300 uppercase tracking-wide">Markov Chain</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span className="text-[8px] text-cyan-400 font-bold">{markov.signalLevel}</span>
           <span className="text-[8px] text-gray-600">|</span>
           <span className="text-[8px] text-green-400 font-bold">{markov.signalLabel}</span>
+          <span className="text-[8px] text-gray-600">|</span>
+          <span className="text-[8px] text-gray-500">n={markov.sampleCount}</span>
         </div>
       </div>
       <div className="p-2 space-y-2">
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-gray-500">PATTERN</span>
-          <span className="text-sm font-black text-white">{markov.currentPattern}</span>
+          <span className="text-sm font-black text-white font-mono">{markov.currentPattern || '—'}</span>
+          <span className="text-[8px] text-gray-600">depth={markov.activeDepth}</span>
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
@@ -44,6 +47,7 @@ export default function MarkovChainPanel() {
             <span className="text-[9px] text-gray-400 w-7 text-right">{markov.tiePct}%</span>
           </div>
         </div>
+        <div className="text-[8px] text-gray-700 italic">Adaptive depth: N4→N3→N2→N1. Core history only.</div>
       </div>
     </div>
   );

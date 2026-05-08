@@ -1,0 +1,344 @@
+Add Dominant Pattern Regime Detection + Advanced Backtesting Logic.
+
+GOAL:
+AI must identify the first/main shoe pattern early, lock it as the Dominant Pattern, detect only confirmed regime transitions, and sync all betting/backtesting logic with actual AI decisions.
+
+--------------------------------------------------
+1. Pattern Regime Definitions
+--------------------------------------------------
+
+Use Core History only:
+- Banker/Player only
+- Ignore Tie completely
+
+Detect active regimes:
+- N1 Pattern = immediate repeat/switch momentum
+- N2 Pattern = two-hand structure
+- N3 Pattern = three-hand structure
+- N4+ Pattern = four-hand or deeper structure
+
+--------------------------------------------------
+2. Initial Dominant Pattern Detection
+--------------------------------------------------
+
+- Do NOT automatically use first 10 hands.
+- Detect the first clear repeating structure from the beginning of Core History.
+- Continue extending the structure until the first valid break appears.
+- The structure before the break becomes the Initial Dominant Pattern.
+
+Rules:
+- Tie is ignored completely
+- One break alone is NOT enough to change regime
+- Initial Pattern locks only if:
+  - at least 4 valid Banker/Player hands exist
+  - stable structure existed before breaking
+
+Track:
+- Initial Pattern Range
+- Break Hand #
+- Break Type
+- Candidate Pattern After Break
+
+--------------------------------------------------
+3. Dominant Pattern Lock
+--------------------------------------------------
+
+Once locked:
+- ignore 1–2 anomalies
+- treat small deviations as noise/error
+- maintain current regime until valid transition confirmation exists
+
+--------------------------------------------------
+4. Valid Transition Rules
+--------------------------------------------------
+
+Allowed transitions only:
+
+- N1 → N2
+- N2 → N1
+- N3 → N2
+- N4+ → N3
+
+Invalid transitions:
+- N1 → N3
+- N1 → N4+
+- N4+ → N1
+- N3 → N1
+
+Ignore invalid jumps unless extremely confirmed.
+
+--------------------------------------------------
+5. Transition Probability Bias
+--------------------------------------------------
+
+Use default transition bias:
+
+- N1 → N2 = 40%
+- N2 → N1 = high probability
+- N3 → N2 = high probability
+- N4+ → N3 = high probability
+
+AI should prefer these paths when evaluating regime changes.
+
+--------------------------------------------------
+6. Transition Confirmation Rules
+--------------------------------------------------
+
+AI must NOT bet during unconfirmed transitions.
+
+Transition confirmation requires:
+- candidate pattern appears 2 consecutive times
+OR
+- candidate pattern appears 3 times within last 5 valid Banker/Player hands
+AND
+- transition follows valid transition rules
+
+Before confirmation:
+- show:
+  - TRANSITION WATCH
+  - NO BET
+
+After confirmation:
+- update Dominant Pattern
+- show:
+  - PATTERN CONFIRMED
+
+Betting resumes ONLY if:
+- Markov agrees
+- N-Strategy Core agrees
+- Backtesting agrees
+
+--------------------------------------------------
+7. Anomaly Handling
+--------------------------------------------------
+
+- One break = anomaly only
+- Two breaks without confirmation = maintain current regime
+- Three breaks within five valid hands:
+  - if matching valid transition path
+  - begin transition confirmation process
+
+Tie does NOT count as:
+- anomaly
+- confirmation
+- regime reset
+
+--------------------------------------------------
+8. Dominant Pattern UI Panel
+--------------------------------------------------
+
+Add panel:
+DOMINANT PATTERN
+
+Show:
+- Initial Pattern
+- Initial Pattern Range
+- Current Dominant Pattern
+- Candidate Pattern
+- Break Hand #
+- Break Type
+- Valid Transition Path
+- Confirmation Count
+- Last 10 Core Pattern Reads
+
+Regime Status:
+- STABLE
+- ANOMALY
+- BROKEN
+- TRANSITION WATCH
+- PATTERN CONFIRMED
+
+Bet Permission:
+- BET ALLOWED
+- NO BET: TRANSITION UNCONFIRMED
+
+--------------------------------------------------
+9. AI Decision Engine Integration
+--------------------------------------------------
+
+Dominant Pattern Regime must affect:
+- confidence
+- consensus score
+- volatility interpretation
+- risk flag
+- bet/no-bet logic
+
+Rules:
+
+STABLE:
+- normal betting logic
+
+ANOMALY:
+- reduce confidence
+
+TRANSITION WATCH:
+- force NO BET
+
+PATTERN CONFIRMED:
+- allow betting only after consensus check
+
+--------------------------------------------------
+10. Advanced Backtesting Logic
+--------------------------------------------------
+
+Backtesting must use:
+- exact same AI engine
+- same decision logic
+- same pattern regime rules
+- same NO BET logic
+
+Replay shoe hand-by-hand.
+
+For every historical hand:
+- generate:
+  - AI prediction
+  - confidence
+  - consensus
+  - BET / NO BET
+using ONLY data available before that hand.
+
+--------------------------------------------------
+11. NO BET Handling
+--------------------------------------------------
+
+If AI Analysis outputs:
+- NO BET
+
+Then:
+- any manual input (Banker / Player / Tie)
+must NOT count as:
+- win
+- loss
+- negative bet
+- positive bet
+
+Instead:
+- record as:
+  - SKIPPED
+
+Effects:
+- bankroll unchanged
+- ROI unchanged
+- confidence unchanged
+- drawdown unchanged
+- streaks unchanged
+
+--------------------------------------------------
+12. Tie Push Handling
+--------------------------------------------------
+
+If AI outputs:
+- BET Banker
+OR
+- BET Player
+
+And actual entered result is:
+- Tie
+
+Then:
+- treat as PUSH
+
+Do NOT count as:
+- loss
+- wrong prediction
+- negative result
+
+Effects:
+- bankroll unchanged
+- ROI unchanged
+- confidence unchanged
+- drawdown unchanged
+
+Track separately:
+- PUSH count
+- PUSH rate %
+
+--------------------------------------------------
+13. Backtesting Result Categories
+--------------------------------------------------
+
+Track separately:
+- wins
+- losses
+- pushes
+- skipped/no-bet
+- unresolved
+
+--------------------------------------------------
+14. Accuracy Rules
+--------------------------------------------------
+
+Accuracy formula:
+
+accuracy =
+wins / (wins + losses)
+
+Do NOT include:
+- skipped
+- pushes
+- Tie interruptions
+
+--------------------------------------------------
+15. ROI & P/L Rules
+--------------------------------------------------
+
+ROI and P/L calculations:
+- ignore skipped hands
+- ignore pushes
+- count only resolved AI bets
+
+--------------------------------------------------
+16. Streak Rules
+--------------------------------------------------
+
+- Push does NOT break win streak
+- Push does NOT break losing streak
+- Skipped does NOT affect streaks
+- Only resolved wins/losses affect streaks
+
+--------------------------------------------------
+17. Backtesting Metrics
+--------------------------------------------------
+
+Track:
+- total AI bets
+- Banker bets
+- Player bets
+- Tie bets
+- wins
+- losses
+- pushes
+- skipped/no-bet
+- actual AI accuracy
+- flat bet P/L using ₱600
+- ROI %
+- max drawdown
+- current streak
+- longest win streak
+- longest losing streak
+- average confidence on winning bets
+- average confidence on losing bets
+
+--------------------------------------------------
+18. Backtesting Status
+--------------------------------------------------
+
+Show:
+- BACKTEST STRONG
+- BACKTEST NEUTRAL
+- BACKTEST WEAK
+
+Live AI confidence should:
+- reduce if backtesting weak
+- increase slightly if backtesting aligns with live signals
+
+--------------------------------------------------
+19. Important Core Rules
+--------------------------------------------------
+
+- Tie NEVER resets Core logic
+- Tie NEVER appears inside Core pattern states
+- Tie is PUSH unless Tie Mode enabled
+- NO BET means no evaluation
+- AI should prioritize regime stability over prediction frequency
+- AI must avoid forcing bets during unstable transitions

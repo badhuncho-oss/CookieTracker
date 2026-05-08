@@ -50,6 +50,10 @@ export default function ShoeVariancePanel() {
               {shoeVariance.trend}
             </span>
           </div>
+          <div className="col-span-2 flex justify-between">
+            <span className="text-[9px] text-gray-500">CURRENT STREAK</span>
+            <span className="text-[9px] font-bold text-white">{shoeVariance.currentStreak || '—'}</span>
+          </div>
         </div>
       </div>
     </div>

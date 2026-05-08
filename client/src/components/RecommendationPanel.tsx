@@ -1,12 +1,26 @@
 import { useBaccaratContext } from "@/context/BaccaratContext";
 
 export default function RecommendationPanel() {
-  const { recommendation, secondaryRecommendation, winStreak, lossStreak, signalData } = useBaccaratContext();
+  const { recommendation, secondaryRecommendation, winStreak, lossStreak, signalData, dominantPattern } = useBaccaratContext();
 
-  const recColor = recommendation.type === 'banker' ? 'text-red-400' : recommendation.type === 'player' ? 'text-cyan-400' : recommendation.type === 'tie' ? 'text-yellow-400' : 'text-gray-300';
+  const recColor =
+    recommendation.type === 'banker' ? 'text-red-400' :
+    recommendation.type === 'player' ? 'text-cyan-400' :
+    recommendation.type === 'tie' ? 'text-yellow-400' : 'text-gray-300';
 
-  const streak = winStreak > 0 ? `${winStreak}W` : lossStreak > 0 ? `${lossStreak}L` : '0';
-  const streakColor = winStreak > 0 ? 'text-green-400' : lossStreak > 0 ? 'text-red-400' : 'text-gray-500';
+  const regimeNote =
+    dominantPattern.regimeStatus === 'TRANSITION WATCH' ? '⚠ Transition Watch — NO BET forced' :
+    dominantPattern.regimeStatus === 'LOW DATA' ? '⏳ Low data mode' :
+    dominantPattern.regimeStatus === 'ANOMALY' ? '⚡ Anomaly detected — confidence reduced' :
+    dominantPattern.regimeStatus === 'BROKEN' ? '✗ Pattern broken' :
+    dominantPattern.regimeStatus === 'PATTERN CONFIRMED' ? '✓ Pattern confirmed' : '';
+
+  const regimeNoteColor =
+    dominantPattern.regimeStatus === 'TRANSITION WATCH' ? 'text-orange-400' :
+    dominantPattern.regimeStatus === 'LOW DATA' ? 'text-gray-600' :
+    dominantPattern.regimeStatus === 'ANOMALY' ? 'text-yellow-500' :
+    dominantPattern.regimeStatus === 'BROKEN' ? 'text-red-500' :
+    dominantPattern.regimeStatus === 'PATTERN CONFIRMED' ? 'text-cyan-400' : 'text-green-600';
 
   return (
     <div className="bg-black border border-gray-800 p-2 h-full">
@@ -44,10 +58,14 @@ export default function RecommendationPanel() {
         </div>
       )}
 
-      <div className="text-[9px] text-green-600 leading-tight">
+      {regimeNote && (
+        <div className={`text-[9px] leading-tight mb-1 ${regimeNoteColor}`}>{regimeNote}</div>
+      )}
+
+      <div className="text-[9px] text-green-700 leading-tight">
         {signalData.recommendation && signalData.recommendation !== 'NO BET'
-          ? `Core shows a strong trend for ${signalData.recommendation} while tie affects confidence`
-          : 'Gathering data for analysis...'}
+          ? `Core shows trend for ${signalData.recommendation} — ${dominantPattern.currentPattern} regime ${dominantPattern.regimeStatus.toLowerCase()}`
+          : 'Enter plays to begin analysis'}
       </div>
     </div>
   );
