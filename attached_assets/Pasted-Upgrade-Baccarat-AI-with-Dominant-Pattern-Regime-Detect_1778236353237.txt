@@ -1,0 +1,227 @@
+Upgrade Baccarat.AI with Dominant Pattern Regime Detection + Bet Ledger / P&L Tracker.
+
+1. CORE HISTORY RULE
+- rawHistory = Banker, Player, Tie
+- coreHistory = Banker and Player only
+- Tie must be ignored in coreHistory
+- Tie must NOT reset N-Strategy Core
+- Tie must NOT appear in Core patterns
+
+2. DOMINANT PATTERN REGIME
+Use Core History only.
+
+Detect:
+- N1 = immediate repeat/switch momentum
+- N2 = two-hand structure
+- N3 = three-hand structure
+- N4+ = four-hand or deeper structure
+
+Initial Pattern:
+- Do NOT use first 10 hands automatically.
+- Detect first clear repeating structure from start of Core History.
+- Continue until first valid break.
+- Pattern before break becomes Initial Dominant Pattern.
+- Lock only after at least 4 valid Banker/Player hands.
+
+Valid transitions:
+- N1 → N2
+- N2 → N1
+- N3 → N2
+- N4+ → N3
+
+Invalid direct jumps are ignored unless extremely confirmed.
+
+Transition confirmation:
+- candidate pattern appears 2 consecutive times
+OR
+- candidate pattern appears 3 times within last 5 valid Banker/Player hands
+AND transition follows valid path.
+
+Regime statuses:
+- STABLE
+- ANOMALY
+- BROKEN
+- TRANSITION WATCH
+- PATTERN CONFIRMED
+
+Rules:
+- STABLE = normal logic
+- ANOMALY = reduce confidence
+- TRANSITION WATCH = force NO BET
+- PATTERN CONFIRMED = allow bet only after consensus
+- Tie does not count as anomaly, confirmation, or reset.
+
+3. AI DECISION ENGINE
+AI must combine:
+- N-Strategy Core
+- N-Strategy Raw
+- Markov Chain
+- Shoe Texture
+- Shoe Variance
+- Volatility
+- Dominant Pattern Regime
+
+AI output:
+- BET / NO BET
+- Banker / Player / Tie
+- Confidence
+- Bet Strength
+- Consensus Score
+- Main Signal
+- Risk Flag
+- Pattern State
+- Regime Status
+
+No-Bet rules:
+- confidence below 57% → NO BET
+- consensus below 65% → NO BET
+- N-Strategy Core and Markov disagree → NO BET
+- Mixed texture + High volatility → NO BET
+- TRANSITION WATCH → NO BET
+- fewer than 20 hands → LOW DATA MODE
+
+4. N-STRATEGY SPLIT
+N-Strategy Core:
+- ignores Tie
+- Banker/Player only
+- primary source for B/P decisions
+
+N-Strategy Raw:
+- includes Banker, Player, Tie
+- supporting only
+- detects tie disturbance, tie clusters, abnormal shoe behavior
+- must not force Tie bet unless Tie Mode is enabled
+
+5. MARKOV CHAIN
+- Use adaptive depth:
+  - N4 if enough samples
+  - fallback N3
+  - fallback N2
+  - fallback N1
+- Show current state, B/P/T probabilities, strongest transition, sample count, active depth.
+
+6. SHOE VARIANCE / TEXTURE
+Show:
+- Banker count / %
+- Player count / %
+- Tie count / %
+- variance score
+- z-score
+- volatility level
+- current streak
+- texture type
+- texture confidence
+
+Detect:
+- Banker streak
+- Player streak
+- chop
+- double chop
+- dragon streak
+- mixed/random
+- tie disturbance
+
+7. BET LEDGER / P&L TRACKER
+Rename Backtesting to:
+- Bet Ledger / P&L Tracker
+
+Purpose:
+- NOT an AI analyzer
+- must NOT affect AI confidence
+- must NOT affect AI prediction
+- must NOT affect consensus
+- only records money won/lost from actual AI bets
+
+Editable settings:
+- Flat Bet Amount
+- default ₱600
+- user can edit anytime
+- Tie payout setting if Tie Mode is enabled
+
+Recording logic:
+If AI Analysis = NO BET:
+- any result entered = SKIPPED
+- no win/loss
+- no bankroll change
+- no ROI change
+- no drawdown change
+- no streak change
+
+If AI Analysis = BET Banker:
+- Banker result = WIN
+- Player result = LOSS
+- Tie result = PUSH
+
+If AI Analysis = BET Player:
+- Player result = WIN
+- Banker result = LOSS
+- Tie result = PUSH
+
+If Tie Mode OFF:
+- Tie is PUSH for Banker/Player bets
+
+If Tie Mode ON and AI bet Tie:
+- Tie result = WIN
+- Banker/Player result = LOSS
+
+P&L:
+- Banker win = Flat Bet × 0.95
+- Player win = Flat Bet × 1.00
+- Tie push = ₱0
+- Loss = -Flat Bet
+- Tie win = Flat Bet × Tie payout setting
+
+Ledger stats:
+- flat bet amount
+- total AI bets
+- Banker bets
+- Player bets
+- Tie bets
+- wins
+- losses
+- pushes
+- skipped
+- win rate = wins / (wins + losses)
+- net P/L
+- ROI %
+- current bankroll change
+- max drawdown
+- current streak
+- longest win streak
+- longest losing streak
+
+8. UI
+Add panels:
+- AI Analysis
+- Dominant Pattern
+- N-Strategy Core
+- N-Strategy Raw
+- Markov Chain
+- Shoe Variance
+- Shoe Texture
+- Bet Ledger / P&L Tracker
+
+Dominant Pattern panel must show:
+- Initial Pattern
+- Initial Pattern Range
+- Current Dominant Pattern
+- Candidate Pattern
+- Break Hand #
+- Break Type
+- Valid Transition Path
+- Confirmation Count
+- Last 10 Core Pattern Reads
+- Regime Status
+- Bet Permission
+
+Keep cyberpunk black/neon design and make mobile responsive.
+
+9. IMPORTANT RULES
+- Never guarantee wins.
+- Never fake certainty.
+- Round confidence to whole numbers.
+- Use only entered shoe data.
+- NO BET means no evaluation.
+- Tie never resets Core logic.
+- Tie is push unless Tie Mode is enabled.
+- P&L Tracker is record-only, not analysis.
